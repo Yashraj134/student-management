@@ -2,6 +2,7 @@ package com.example.student_management.designpatterns.facade;
 
 import com.example.student_management.aop.AuditAction;
 import com.example.student_management.aop.CheckDuplicateStudent;
+import com.example.student_management.dto.DocumentResponse;
 import com.example.student_management.dto.PagedResponse;
 import com.example.student_management.dto.StudentDashboardStatsResponse;
 import com.example.student_management.dto.StudentProfileResponse;
@@ -14,6 +15,7 @@ import com.example.student_management.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -40,6 +42,14 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
         List<StudentProfileResponse> responses = studentService.bulkCreateStudents(requests);
         responses.forEach(response -> auditService.logAction("CREATE_STUDENT", response.getStudentId()));
         return responses;
+    }
+
+    @Override
+    @AuditAction("UPLOAD_STUDENT_DOCUMENT")
+    public DocumentResponse uploadStudentDocument(Integer studentId, String documentType, MultipartFile file) {
+        DocumentResponse response = documentService.uploadDocument(studentId, documentType, file);
+        auditService.logAction("UPLOAD_STUDENT_DOCUMENT", studentId);
+        return response;
     }
 
     @Override

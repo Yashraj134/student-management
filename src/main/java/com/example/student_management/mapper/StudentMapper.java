@@ -215,5 +215,15 @@ public class StudentMapper {
                 .last(page.isLast())
                 .build();
     }
+
+    public DocumentResponse toDocumentResponse(Document document) {
+        return DocumentResponse.builder()
+                .documentId(document.getDocumentId())
+                .documentType(document.getDocumentType())
+                .fileName(document.getFileName())
+                .filePath(document.getFilePath())
+                .uploadedAt(document.getUploadedAt())
+                .build();
+    }
 }
 

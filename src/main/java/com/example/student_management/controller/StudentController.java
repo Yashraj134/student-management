@@ -1,6 +1,7 @@
 package com.example.student_management.controller;
 
 import com.example.student_management.designpatterns.facade.StudentManagementFacade;
+import com.example.student_management.dto.DocumentResponse;
 import com.example.student_management.dto.PagedResponse;
 import com.example.student_management.dto.StudentDashboardStatsResponse;
 import com.example.student_management.dto.StudentProfileResponse;
@@ -12,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,6 +36,15 @@ public class StudentController {
     public ResponseEntity<List<StudentProfileResponse>> bulkCreateStudents(
             @Valid @RequestBody List<StudentUpsertRequest> requests) {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentManagementFacade.bulkCreateStudents(requests));
+    }
+
+    @PostMapping(value = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentResponse> uploadStudentDocument(
+            @PathVariable("id") Integer studentId,
+            @RequestParam("documentType") String documentType,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(studentManagementFacade.uploadStudentDocument(studentId, documentType, file));
     }
 
     @GetMapping("/{id}")

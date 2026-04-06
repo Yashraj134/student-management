@@ -130,6 +130,19 @@ Returns data for charts.
 - **URL**: `/students/{id}`
 - **Expected**: `204 No Content`
 
+## 12) Upload Certificate / Document (Multipart)
+
+Use this API to upload a file from local system into `uploads/` and save metadata in `documents` table.
+
+- **Method**: `POST`
+- **URL**: `/students/{id}/documents`
+- **Example**: `/students/1/documents`
+- **Body type (Postman)**: `form-data`
+  - `documentType` -> Text (example: `Aadhaar`)
+  - `file` -> File (choose local file such as PDF/JPG)
+
+Expected response includes `documentId`, `documentType`, `fileName`, `filePath`, `uploadedAt`.
+
 ## Error Responses You Should Test
 
 - `400 Bad Request` -> invalid payload/validation
