@@ -1,0 +1,78 @@
+CREATE TABLE students (
+student_id SERIAL PRIMARY KEY,
+first_name VARCHAR(10),
+middle_name VARCHAR(50),
+last_name VARCHAR(50),
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE student_contact (
+	contact_id SERIAL PRIMARY KEY,
+	student_id INT REFERENCES students(student_id) ON DELETE CASCADE,
+	address TEXT,
+	mobile_no VARCHAR(15),
+	email VARCHAR(100)
+);
+
+
+CREATE TABLE admission_details (
+
+	admission_id SERIAL PRIMARY KEY,
+	student_id INT REFERENCES students(student_id) ON DELETE CASCADE,
+	registration_id VARCHAR(50),
+	date_of_registration DATE,
+	prn VARCHAR(50),
+	admitted_academic_year INTEGER,
+	current_academic_year INTEGER,
+	admission_pattern VARCHAR(20) CHECK (admission_pattern IN ('regular', 'management')),
+	fees INT
+);
+
+CREATE TABLE personal_info (
+
+	personal_id SERIAL PRIMARY KEY,
+	student_id INT REFERENCES students(student_id) ON DELETE CASCADE,
+	birth_place VARCHAR(100),
+	nationality VARCHAR(50),
+	gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
+	category VARCHAR(50),
+	religion VARCHAR(50),
+	domicile_state VARCHAR(50),
+	blood_group VARCHAR(5) CHECK (
+	blood_group IN ('A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-')
+	)
+);
+
+
+CREATE TABLE parent_details (
+
+	parent_id SERIAL PRIMARY KEY,
+
+	student_id INT REFERENCES students(student_id) ON DELETE CASCADE,
+
+	father_first_name VARCHAR(50),
+
+	father_middle_name VARCHAR(50),
+
+	father_last_name VARCHAR(50),
+
+	father_contact_no VARCHAR(15),
+
+	mother_first_name VARCHAR(50),
+
+	mother_middle_name VARCHAR(50),
+
+	mother_last_name VARCHAR(50),
+
+	mother_contact_no VARCHAR(15)
+);
+
+
+CREATE TABLE documents (
+	document_id SERIAL PRIMARY KEY,
+	student_id INT REFERENCES students(student_id) ON DELETE CASCADE,
+	document_type VARCHAR(50),
+	file_name VARCHAR(255),
+	file_path TEXT, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
