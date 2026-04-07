@@ -16,12 +16,16 @@ import com.example.student_management.exception.ResourceNotFoundException;
 import com.example.student_management.mapper.StudentMapper;
 import com.example.student_management.repository.StudentRepository;
 import com.example.student_management.service.DocumentService;
+import com.example.student_management.service.FileStorageService;
 import com.example.student_management.service.StudentService;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,9 +33,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
 
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+    private static final String DEFAULT_MALE_IMAGE_PATH = "defaults/male_icon.jpg";
+    private static final String DEFAULT_FEMALE_IMAGE_PATH = "defaults/female_icon.jpg";
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
+
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
     private final DocumentService documentService;
+    private final FileStorageService fileStorageService;
     private final AdmissionValidationContext admissionValidationContext;
     private final AdmissionDetailsFactoryProvider admissionDetailsFactoryProvider;
     private final StudentCreationSubject studentCreationSubject;
@@ -46,6 +56,9 @@ public class StudentServiceImpl implements StudentService {
         AdmissionDetails admissionDetails = factory.create(request.getAdmissionDetails());
         student.setAdmissionDetails(admissionDetails);
         documentService.replaceDocuments(student, request.getDocuments());
+        // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+        applyDefaultProfileImagePath(student);
+        // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
 
         Student savedStudent = studentRepository.save(student);
         studentCreationSubject.notifyStudentCreated(savedStudent);
@@ -57,6 +70,30 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentProfileResponse> bulkCreateStudents(List<StudentUpsertRequest> requests) {
         return requests.stream().map(this::createStudent).toList();
     }
+
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
+    @Override
+    @Transactional
+    public StudentProfileResponse uploadStudentProfileImage(Integer studentId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("file is required and must not be empty");
+        }
+
+        Student student = studentRepository.findFullProfileById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        String storedPath;
+        try {
+            storedPath = fileStorageService.store(studentId, "profile-image", file);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to store profile image", ex);
+        }
+
+        student.setProfileImagePath(storedPath);
+        Student updated = studentRepository.save(student);
+        return studentMapper.toProfileResponse(updated);
+    }
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
 
     @Override
     @Transactional(readOnly = true)
@@ -79,6 +116,22 @@ public class StudentServiceImpl implements StudentService {
         Page<StudentSummaryResponse> page = studentRepository.findAllSummaries(pageable);
         return studentMapper.toPagedSummaryResponse(page);
     }
+
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentProfileResponse> getAllStudentsList() {
+        return studentRepository.findAllFullProfiles().stream()
+                .map(studentMapper::toProfileResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentSummaryResponse> getAllSummary() {
+        return studentRepository.findAllSummaryList();
+    }
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
 
     @Override
     @Transactional(readOnly = true)
@@ -132,10 +185,29 @@ public class StudentServiceImpl implements StudentService {
         studentMapper.updateStudentEntity(existingStudent, request);
         existingStudent.setAdmissionDetails(factory.create(request.getAdmissionDetails()));
         documentService.replaceDocuments(existingStudent, request.getDocuments());
+        // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+        applyDefaultProfileImagePath(existingStudent);
+        // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
 
         Student updated = studentRepository.save(existingStudent);
         return studentMapper.toProfileResponse(updated);
     }
+
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+    private void applyDefaultProfileImagePath(Student student) {
+        if (StringUtils.hasText(student.getProfileImagePath())) {
+            student.setProfileImagePath(student.getProfileImagePath().trim());
+            return;
+        }
+
+        String gender = student.getPersonalInfo() != null ? student.getPersonalInfo().getGender() : null;
+        if (StringUtils.hasText(gender) && "male".equalsIgnoreCase(gender.trim())) {
+            student.setProfileImagePath(DEFAULT_MALE_IMAGE_PATH);
+            return;
+        }
+        student.setProfileImagePath(DEFAULT_FEMALE_IMAGE_PATH);
+    }
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
 
     @Override
     @Transactional

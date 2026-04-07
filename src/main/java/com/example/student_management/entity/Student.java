@@ -44,6 +44,11 @@ public class Student {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
+    // ===== ADDED: PROFILE_IMAGE_PATH START =====
+    @Column(name = "profile_image_path", columnDefinition = "TEXT")
+    private String profileImagePath;
+    // ===== ADDED: PROFILE_IMAGE_PATH END =====
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

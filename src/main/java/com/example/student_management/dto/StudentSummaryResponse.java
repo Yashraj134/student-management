@@ -16,5 +16,9 @@ public class StudentSummaryResponse {
     private String fullName;
     private String prn;
     private String email;
+
+    // ===== ADDED: PROFILE_IMAGE_PATH START =====
+    private String profileImagePath;
+    // ===== ADDED: PROFILE_IMAGE_PATH END =====
 }
 

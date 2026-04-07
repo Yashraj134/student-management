@@ -16,9 +16,20 @@ public interface StudentManagementFacade {
     StudentProfileResponse createStudent(StudentUpsertRequest request);
     List<StudentProfileResponse> bulkCreateStudents(List<StudentUpsertRequest> requests);
     DocumentResponse uploadStudentDocument(Integer studentId, String documentType, MultipartFile file);
+
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
+    StudentProfileResponse uploadStudentProfileImage(Integer studentId, MultipartFile file);
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
+
     StudentProfileResponse getStudentById(Integer studentId);
     StudentSummaryResponse getStudentSummaryById(Integer studentId);
     PagedResponse<StudentSummaryResponse> getAllStudents(Pageable pageable);
+
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
+    List<StudentProfileResponse> getAllStudentsList();
+    List<StudentSummaryResponse> getAllSummary();
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
+
     PagedResponse<StudentSummaryResponse> searchStudents(String keyword, Pageable pageable);
     PagedResponse<StudentSummaryResponse> filterStudents(Integer currentAcademicYear, String admissionPattern, Pageable pageable);
     StudentDashboardStatsResponse getDashboardStats();

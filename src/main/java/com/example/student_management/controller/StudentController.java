@@ -47,6 +47,15 @@ public class StudentController {
                 .body(studentManagementFacade.uploadStudentDocument(studentId, documentType, file));
     }
 
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
+    @PostMapping(value = "/{id}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<StudentProfileResponse> uploadStudentProfileImage(
+            @PathVariable("id") Integer studentId,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(studentManagementFacade.uploadStudentProfileImage(studentId, file));
+    }
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
+
     @GetMapping("/{id}")
     public ResponseEntity<StudentProfileResponse> getStudent(@PathVariable("id") Integer studentId) {
         return ResponseEntity.ok(studentManagementFacade.getStudentById(studentId));
@@ -62,6 +71,18 @@ public class StudentController {
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
         return ResponseEntity.ok(studentManagementFacade.getAllStudents(pageable));
     }
+
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
+    @GetMapping("/all")
+    public ResponseEntity<List<StudentProfileResponse>> getAllStudents() {
+        return ResponseEntity.ok(studentManagementFacade.getAllStudentsList());
+    }
+
+    @GetMapping("/summary/all")
+    public ResponseEntity<List<StudentSummaryResponse>> getAllSummary() {
+        return ResponseEntity.ok(studentManagementFacade.getAllSummary());
+    }
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
 
     @GetMapping("/search")
     public ResponseEntity<PagedResponse<StudentSummaryResponse>> searchStudents(

@@ -18,6 +18,11 @@ public class StudentProfileResponse {
     private String firstName;
     private String middleName;
     private String lastName;
+
+    // ===== ADDED: PROFILE_IMAGE_PATH START =====
+    private String profileImagePath;
+    // ===== ADDED: PROFILE_IMAGE_PATH END =====
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private StudentContactResponse studentContact;

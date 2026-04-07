@@ -52,6 +52,16 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
         return response;
     }
 
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
+    @Override
+    @AuditAction("UPLOAD_PROFILE_IMAGE")
+    public StudentProfileResponse uploadStudentProfileImage(Integer studentId, MultipartFile file) {
+        StudentProfileResponse response = studentService.uploadStudentProfileImage(studentId, file);
+        auditService.logAction("UPLOAD_PROFILE_IMAGE", studentId);
+        return response;
+    }
+    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
+
     @Override
     public StudentProfileResponse getStudentById(Integer studentId) {
         return studentService.getStudentById(studentId);
@@ -66,6 +76,18 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     public PagedResponse<StudentSummaryResponse> getAllStudents(Pageable pageable) {
         return studentService.getAllStudents(pageable);
     }
+
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
+    @Override
+    public List<StudentProfileResponse> getAllStudentsList() {
+        return studentService.getAllStudentsList();
+    }
+
+    @Override
+    public List<StudentSummaryResponse> getAllSummary() {
+        return studentService.getAllSummary();
+    }
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
 
     @Override
     public PagedResponse<StudentSummaryResponse> searchStudents(String keyword, Pageable pageable) {

@@ -16,15 +16,24 @@ import java.util.Collections;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 public class StudentMapper {
+
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+    private static final String DEFAULT_MALE_IMAGE_PATH = "defaults/male_icon.jpg";
+    private static final String DEFAULT_FEMALE_IMAGE_PATH = "defaults/female_icon.jpg";
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
 
     public Student toStudentEntity(StudentUpsertRequest request) {
         Student student = Student.builder()
                 .firstName(request.getFirstName())
                 .middleName(request.getMiddleName())
                 .lastName(request.getLastName())
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING START =====
+                .profileImagePath(request.getProfileImagePath())
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING END =====
                 .build();
 
         student.setStudentContact(StudentContact.builder()
@@ -73,6 +82,9 @@ public class StudentMapper {
         student.setFirstName(request.getFirstName());
         student.setMiddleName(request.getMiddleName());
         student.setLastName(request.getLastName());
+        // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING START =====
+        student.setProfileImagePath(request.getProfileImagePath());
+        // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING END =====
 
         StudentContact contact = student.getStudentContact() == null ? StudentContact.builder().build() : student.getStudentContact();
         contact.setAddress(request.getStudentContact().getAddress());
@@ -133,6 +145,9 @@ public class StudentMapper {
                 .firstName(student.getFirstName())
                 .middleName(student.getMiddleName())
                 .lastName(student.getLastName())
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING START =====
+                .profileImagePath(resolveProfileImagePath(student))
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING END =====
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .studentContact(StudentContactResponse.builder()
@@ -191,8 +206,28 @@ public class StudentMapper {
                 .fullName(fullName)
                 .prn(student.getAdmissionDetails() != null ? student.getAdmissionDetails().getPrn() : null)
                 .email(student.getStudentContact() != null ? student.getStudentContact().getEmail() : null)
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING START =====
+                .profileImagePath(resolveProfileImagePath(student))
+                // ===== ADDED: PROFILE_IMAGE_PATH_MAPPING END =====
                 .build();
     }
+
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS START =====
+    public String resolveProfileImagePath(Student student) {
+        if (student == null) {
+            return DEFAULT_FEMALE_IMAGE_PATH;
+        }
+        if (StringUtils.hasText(student.getProfileImagePath())) {
+            return student.getProfileImagePath().trim();
+        }
+
+        String gender = student.getPersonalInfo() != null ? student.getPersonalInfo().getGender() : null;
+        if (StringUtils.hasText(gender) && "male".equalsIgnoreCase(gender.trim())) {
+            return DEFAULT_MALE_IMAGE_PATH;
+        }
+        return DEFAULT_FEMALE_IMAGE_PATH;
+    }
+    // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
 
     public PagedResponse<StudentSummaryResponse> toPagedResponse(Page<Student> page) {
         return PagedResponse.<StudentSummaryResponse>builder()

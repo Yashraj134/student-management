@@ -15,6 +15,9 @@ CREATE TABLE students (
     first_name VARCHAR(10),
     middle_name VARCHAR(50),
     last_name VARCHAR(50),
+    -- ===== ADDED: PROFILE_IMAGE_PATH START =====
+    profile_image_path TEXT,
+    -- ===== ADDED: PROFILE_IMAGE_PATH END =====
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -110,6 +113,16 @@ INSERT INTO personal_info (
 (4, 4, 'Kochi', 'Indian', 'female', 'OBC', 'Hindu', 'Kerala', 'AB+'),
 (5, 5, 'Varanasi', 'Indian', 'male', 'OPEN', 'Sikh', 'Uttar Pradesh', 'A-');
 
+-- ===== ADDED: PROFILE_IMAGE_PATH START =====
+UPDATE students s
+SET profile_image_path = CASE
+    WHEN lower(coalesce(pi.gender, '')) = 'male' THEN 'defaults/male_icon.jpg'
+    ELSE 'defaults/female_icon.jpg'
+END
+FROM personal_info pi
+WHERE pi.student_id = s.student_id;
+-- ===== ADDED: PROFILE_IMAGE_PATH END =====
+
 INSERT INTO parent_details (
     parent_id, student_id, father_first_name, father_middle_name, father_last_name, father_contact_no,
     mother_first_name, mother_middle_name, mother_last_name, mother_contact_no
@@ -137,3 +150,14 @@ SELECT setval('documents_document_id_seq', (SELECT MAX(document_id) FROM documen
 
 COMMIT;
 
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS profile_image_path TEXT;
+
+UPDATE students s
+SET profile_image_path = CASE
+                             WHEN lower(coalesce(pi.gender, '')) = 'male' THEN 'defaults/male_icon.jpg'
+                             ELSE 'defaults/female_icon.jpg'
+    END
+    FROM personal_info pi
+WHERE pi.student_id = s.student_id
+  AND (s.profile_image_path IS NULL OR trim(s.profile_image_path) = '');

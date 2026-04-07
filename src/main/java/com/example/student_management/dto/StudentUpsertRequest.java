@@ -30,6 +30,10 @@ public class StudentUpsertRequest {
     @Size(max = 50)
     private String lastName;
 
+    // ===== ADDED: PROFILE_IMAGE_PATH START =====
+    private String profileImagePath;
+    // ===== ADDED: PROFILE_IMAGE_PATH END =====
+
     @Valid
     @NotNull
     private StudentContactRequest studentContact;

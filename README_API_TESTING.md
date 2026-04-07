@@ -21,6 +21,7 @@ This file contains all API endpoints for `com.example.student_management` backen
   "firstName": "Aarav",
   "middleName": "Kumar",
   "lastName": "Sharma",
+  "profileImagePath": "uploads/student-1/profile-image/aarav.jpg",
   "studentContact": {
     "address": "Baner, Pune, Maharashtra",
     "mobileNo": "9876543210",
@@ -63,6 +64,10 @@ This file contains all API endpoints for `com.example.student_management` backen
   ]
 }
 ```
+
+If `profileImagePath` is omitted or blank, backend auto-sets:
+- `defaults/male_icon.jpg` when gender is `male`
+- `defaults/female_icon.jpg` for all other gender values
 
 ## 2) Bulk Create Students
 
@@ -142,6 +147,27 @@ Use this API to upload a file from local system into `uploads/` and save metadat
   - `file` -> File (choose local file such as PDF/JPG)
 
 Expected response includes `documentId`, `documentType`, `fileName`, `filePath`, `uploadedAt`.
+
+## 13) Upload Student Profile Image (Multipart)
+
+Use this API when user wants to override default icon (`male_icon.jpg` / `female_icon.jpg`) with an actual photo.
+
+- **Method**: `POST`
+- **URL**: `/students/{id}/profile-image`
+- **Example**: `/students/1/profile-image`
+- **Body type (Postman)**: `form-data`
+  - `file` -> File (choose local JPG/PNG from Downloads)
+
+Success response returns updated `StudentProfileResponse` with `profileImagePath`.
+
+## Frontend Image URL Rule
+
+Backend now serves local uploads using `/files/**` mapping.
+
+- If API returns `profileImagePath = defaults/male_icon.jpg`, frontend image URL is:
+  - `http://localhost:8081/files/defaults/male_icon.jpg`
+- If API returns `profileImagePath = student-1/profile-image/abc.jpg`, frontend image URL is:
+  - `http://localhost:8081/files/student-1/profile-image/abc.jpg`
 
 ## Error Responses You Should Test
 

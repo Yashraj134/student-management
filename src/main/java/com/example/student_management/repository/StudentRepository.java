@@ -25,16 +25,19 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
             """)
     Optional<Student> findFullProfileById(@Param("id") Integer id);
 
+    // ===== ADDED: PROFILE_IMAGE_PATH_SUMMARY_QUERIES START =====
     @Query(value = """
             select new com.example.student_management.dto.StudentSummaryResponse(
                 s.studentId,
                 trim(concat(coalesce(s.firstName, ''), ' ', coalesce(s.middleName, ''), ' ', coalesce(s.lastName, ''))),
                 ad.prn,
-                sc.email
+                sc.email,
+                coalesce(s.profileImagePath, case when lower(coalesce(pi.gender, '')) = 'male' then 'defaults/male_icon.jpg' else 'defaults/female_icon.jpg' end)
             )
             from Student s
             left join s.studentContact sc
             left join s.admissionDetails ad
+            left join s.personalInfo pi
             where lower(coalesce(s.firstName, '')) like lower(concat('%', :keyword, '%'))
                or lower(coalesce(s.lastName, '')) like lower(concat('%', :keyword, '%'))
                or lower(coalesce(sc.email, '')) like lower(concat('%', :keyword, '%'))
@@ -57,11 +60,13 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                 s.studentId,
                 trim(concat(coalesce(s.firstName, ''), ' ', coalesce(s.middleName, ''), ' ', coalesce(s.lastName, ''))),
                 ad.prn,
-                sc.email
+                sc.email,
+                coalesce(s.profileImagePath, case when lower(coalesce(pi.gender, '')) = 'male' then 'defaults/male_icon.jpg' else 'defaults/female_icon.jpg' end)
             )
             from Student s
             left join s.studentContact sc
             left join s.admissionDetails ad
+            left join s.personalInfo pi
             """,
             countQuery = """
                     select count(s)
@@ -69,16 +74,45 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                     """)
     Page<StudentSummaryResponse> findAllSummaries(Pageable pageable);
 
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
+    @Query("""
+            select distinct s from Student s
+            left join fetch s.studentContact
+            left join fetch s.admissionDetails
+            left join fetch s.personalInfo
+            left join fetch s.parentDetails
+            left join fetch s.documents
+            """)
+    List<Student> findAllFullProfiles();
+
+    @Query("""
+            select new com.example.student_management.dto.StudentSummaryResponse(
+                s.studentId,
+                trim(concat(coalesce(s.firstName, ''), ' ', coalesce(s.middleName, ''), ' ', coalesce(s.lastName, ''))),
+                ad.prn,
+                sc.email,
+                coalesce(s.profileImagePath, case when lower(coalesce(pi.gender, '')) = 'male' then 'defaults/male_icon.jpg' else 'defaults/female_icon.jpg' end)
+            )
+            from Student s
+            left join s.studentContact sc
+            left join s.admissionDetails ad
+            left join s.personalInfo pi
+            """)
+    List<StudentSummaryResponse> findAllSummaryList();
+    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
+
     @Query(value = """
             select new com.example.student_management.dto.StudentSummaryResponse(
                 s.studentId,
                 trim(concat(coalesce(s.firstName, ''), ' ', coalesce(s.middleName, ''), ' ', coalesce(s.lastName, ''))),
                 ad.prn,
-                sc.email
+                sc.email,
+                coalesce(s.profileImagePath, case when lower(coalesce(pi.gender, '')) = 'male' then 'defaults/male_icon.jpg' else 'defaults/female_icon.jpg' end)
             )
             from Student s
             left join s.studentContact sc
             left join s.admissionDetails ad
+            left join s.personalInfo pi
             where (:currentAcademicYear is null or ad.currentAcademicYear = :currentAcademicYear)
               and (:admissionPattern is null or lower(ad.admissionPattern) = lower(:admissionPattern))
             """,
@@ -122,12 +156,15 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                 s.studentId,
                 trim(concat(coalesce(s.firstName, ''), ' ', coalesce(s.middleName, ''), ' ', coalesce(s.lastName, ''))),
                 ad.prn,
-                sc.email
+                sc.email,
+                coalesce(s.profileImagePath, case when lower(coalesce(pi.gender, '')) = 'male' then 'defaults/male_icon.jpg' else 'defaults/female_icon.jpg' end)
             )
             from Student s
             left join s.studentContact sc
             left join s.admissionDetails ad
+            left join s.personalInfo pi
             where s.studentId = :studentId
             """)
     Optional<StudentSummaryResponse> findSummaryByStudentId(@Param("studentId") Integer studentId);
+    // ===== ADDED: PROFILE_IMAGE_PATH_SUMMARY_QUERIES END =====
 }
