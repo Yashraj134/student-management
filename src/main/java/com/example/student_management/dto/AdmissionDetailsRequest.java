@@ -33,10 +33,12 @@ public class AdmissionDetailsRequest {
     @Max(2100)
     private Integer admittedAcademicYear;
 
-    @NotNull
-    @Min(2000)
-    @Max(2100)
+    // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+    // Derived in service as: (current calendar year - admittedAcademicYear + 1), clamped to 1..4.
+    @Min(1)
+    @Max(4)
     private Integer currentAcademicYear;
+    // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
 
     @NotBlank
     @Pattern(regexp = "^(regular|management)$", message = "admissionPattern must be regular or management")

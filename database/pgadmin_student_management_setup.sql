@@ -97,11 +97,13 @@ INSERT INTO admission_details (
     admission_id, student_id, registration_id, date_of_registration, prn,
     admitted_academic_year, current_academic_year, admission_pattern, fees
 ) VALUES
-(1, 1, 'REG-MH-2026-0001', '2026-04-01', 'PRN2026MH0001', 2026, 2026, 'regular', 85000),
-(2, 2, 'REG-KA-2025-0002', '2025-06-20', 'PRN2025KA0002', 2025, 2026, 'management', 150000),
-(3, 3, 'REG-MH-2024-0003', '2024-07-12', 'PRN2024MH0003', 2024, 2026, 'regular', 78000),
-(4, 4, 'REG-KL-2026-0004', '2026-03-15', 'PRN2026KL0004', 2026, 2026, 'management', 135000),
-(5, 5, 'REG-UP-2023-0005', '2023-08-02', 'PRN2023UP0005', 2023, 2025, 'regular', 72000);
+-- ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+(1, 1, 'REG-MH-2026-0001', '2026-04-01', 'PRN2026MH0001', 2026, 1, 'regular', 85000),
+(2, 2, 'REG-KA-2025-0002', '2025-06-20', 'PRN2025KA0002', 2025, 2, 'management', 150000),
+(3, 3, 'REG-MH-2024-0003', '2024-07-12', 'PRN2024MH0003', 2024, 3, 'regular', 78000),
+(4, 4, 'REG-KL-2026-0004', '2026-03-15', 'PRN2026KL0004', 2026, 1, 'management', 135000),
+(5, 5, 'REG-UP-2023-0005', '2023-08-02', 'PRN2023UP0005', 2023, 4, 'regular', 72000);
+-- ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
 
 INSERT INTO personal_info (
     personal_id, student_id, birth_place, nationality, gender, category,
@@ -161,3 +163,13 @@ SET profile_image_path = CASE
     FROM personal_info pi
 WHERE pi.student_id = s.student_id
   AND (s.profile_image_path IS NULL OR trim(s.profile_image_path) = '');
+
+-- ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+UPDATE admission_details
+SET current_academic_year = LEAST(
+    4,
+    GREATEST(1, EXTRACT(YEAR FROM CURRENT_DATE)::INT - admitted_academic_year + 1)
+)
+WHERE admitted_academic_year IS NOT NULL;
+-- ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
+

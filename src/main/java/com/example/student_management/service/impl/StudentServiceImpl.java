@@ -19,6 +19,7 @@ import com.example.student_management.service.DocumentService;
 import com.example.student_management.service.FileStorageService;
 import com.example.student_management.service.StudentService;
 import java.io.IOException;
+import java.time.Year;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,9 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentProfileResponse createStudent(StudentUpsertRequest request) {
+        // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+        deriveAndSetCurrentAcademicYear(request);
+        // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
         admissionValidationContext.validate(request.getAdmissionDetails());
         AdmissionDetailsFactory factory = admissionDetailsFactoryProvider.getFactory(request.getAdmissionDetails().getAdmissionPattern());
 
@@ -179,6 +183,9 @@ public class StudentServiceImpl implements StudentService {
         Student existingStudent = studentRepository.findFullProfileById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
+        // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+        deriveAndSetCurrentAcademicYear(request);
+        // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
         admissionValidationContext.validate(request.getAdmissionDetails());
         AdmissionDetailsFactory factory = admissionDetailsFactoryProvider.getFactory(request.getAdmissionDetails().getAdmissionPattern());
 
@@ -208,6 +215,26 @@ public class StudentServiceImpl implements StudentService {
         student.setProfileImagePath(DEFAULT_FEMALE_IMAGE_PATH);
     }
     // ===== ADDED: PROFILE_IMAGE_PATH_DEFAULTS END =====
+
+    // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
+    private void deriveAndSetCurrentAcademicYear(StudentUpsertRequest request) {
+        if (request == null || request.getAdmissionDetails() == null || request.getAdmissionDetails().getAdmittedAcademicYear() == null) {
+            throw new IllegalArgumentException("admittedAcademicYear is required");
+        }
+
+        int currentCalendarYear = Year.now().getValue();
+        int admittedAcademicYear = request.getAdmissionDetails().getAdmittedAcademicYear();
+        int derivedYear = currentCalendarYear - admittedAcademicYear + 1;
+
+        if (derivedYear < 1) {
+            derivedYear = 1;
+        } else if (derivedYear > 4) {
+            derivedYear = 4;
+        }
+
+        request.getAdmissionDetails().setCurrentAcademicYear(derivedYear);
+    }
+    // ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION END =====
 
     @Override
     @Transactional
