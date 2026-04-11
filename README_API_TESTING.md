@@ -11,6 +11,59 @@ This file contains all API endpoints for `com.example.student_management` backen
 - `Content-Type: application/json`
 - `Accept: application/json`
 
+## Authentication (JWT) - Test First
+
+Most student APIs are protected by JWT. Generate token first, then send it in protected API calls.
+
+### Login API
+
+- **Method**: `POST`
+- **URL**: `/auth/login`
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Alternative seeded user:
+
+```json
+{
+  "username": "student",
+  "password": "student123"
+}
+```
+
+Expected login response:
+
+```json
+{
+  "token": "<JWT_TOKEN>",
+  "tokenType": "Bearer",
+  "username": "admin",
+  "role": "ADMIN"
+}
+```
+
+### How to Use Token in Postman
+
+For protected APIs, set Authorization header as:
+
+`Authorization: Bearer <JWT_TOKEN>`
+
+Postman recommended way:
+
+1. Open request -> **Authorization** tab
+2. Type = `Bearer Token`
+3. Paste token value only (without `Bearer` prefix)
+
+Role behavior:
+
+- `ADMIN` -> can access all APIs
+- `STUDENT` -> only `GET /students/{id}`
+
 ## 1) Create Student
 
 - **Method**: `POST`
@@ -172,19 +225,23 @@ Backend now serves local uploads using `/files/**` mapping.
 ## Error Responses You Should Test
 
 - `400 Bad Request` -> invalid payload/validation
+- `401 Unauthorized` -> token missing/invalid/expired
+- `403 Forbidden` -> valid token but role does not have access
 - `404 Not Found` -> unknown student id
 - `409 Conflict` -> duplicate email or duplicate PRN
 
 ## Suggested Execution Order
 
 1. Run SQL setup in `database/pgadmin_student_management_setup.sql`
-2. Test `GET /students?page=0&size=10`
-3. Test `GET /students/search?...`
-4. Test `GET /students/filter?...`
-5. Test `GET /students/stats`
-6. Test `GET /students/stats/year-wise`
-7. Test `GET /students/summary/{id}`
-8. Test `PUT /students/{id}`
-9. Test `DELETE /students/{id}`
-10. Test `POST /students` and `POST /students/bulk`
+2. Test `POST /auth/login` and copy JWT token
+3. Test `GET /students/{id}` with `Authorization: Bearer <token>`
+4. Test `GET /students?page=0&size=10`
+5. Test `GET /students/search?...`
+6. Test `GET /students/filter?...`
+7. Test `GET /students/stats`
+8. Test `GET /students/stats/year-wise`
+9. Test `GET /students/summary/{id}`
+10. Test `PUT /students/{id}`
+11. Test `DELETE /students/{id}`
+12. Test `POST /students` and `POST /students/bulk`
 

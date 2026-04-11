@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS personal_info CASCADE;
 DROP TABLE IF EXISTS admission_details CASCADE;
 DROP TABLE IF EXISTS student_contact CASCADE;
 DROP TABLE IF EXISTS students CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE students (
     student_id SERIAL PRIMARY KEY,
@@ -78,6 +79,13 @@ CREATE TABLE documents (
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'STUDENT'))
+);
+
 -- Seed students
 INSERT INTO students (student_id, first_name, middle_name, last_name) VALUES
 (1, 'Aarav', 'Kumar', 'Sharma'),
@@ -143,12 +151,15 @@ INSERT INTO documents (document_id, student_id, document_type, file_name, file_p
 (5, 4, '12th Marksheet', '12th_priya.pdf', '/docs/marksheets/12th_priya.pdf'),
 (6, 5, 'Aadhaar', 'aadhaar_vikram.pdf', '/docs/aadhaar/aadhaar_vikram.pdf');
 
+-- Default users are inserted by AuthDataInitializer on app startup.
+
 SELECT setval('students_student_id_seq', (SELECT MAX(student_id) FROM students));
 SELECT setval('student_contact_contact_id_seq', (SELECT MAX(contact_id) FROM student_contact));
 SELECT setval('admission_details_admission_id_seq', (SELECT MAX(admission_id) FROM admission_details));
 SELECT setval('personal_info_personal_id_seq', (SELECT MAX(personal_id) FROM personal_info));
 SELECT setval('parent_details_parent_id_seq', (SELECT MAX(parent_id) FROM parent_details));
 SELECT setval('documents_document_id_seq', (SELECT MAX(document_id) FROM documents));
+SELECT setval('users_user_id_seq', COALESCE((SELECT MAX(user_id) FROM users), 1), true);
 
 COMMIT;
 
