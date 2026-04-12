@@ -15,6 +15,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +25,7 @@ import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -45,8 +47,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
+                        .requestMatchers("/files/**").permitAll()
                         .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/students/\\d+")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/students/summary/\\d+")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.POST, "/students/\\d+/documents")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.POST, "/students/\\d+/profile-image")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.POST, "/students/\\d+/request-id-card")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.POST, "/students/\\d+/id-card/request")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/students/\\d+/id-card-status")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/students/\\d+/id-card/status")).hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.PUT, "/students/\\d+/id-card/approve")).hasAnyRole("ADMIN")
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.PUT, "/students/\\d+/id-card/reject")).hasAnyRole("ADMIN")
                         .anyRequest().hasRole("ADMIN")
                 )
                 .authenticationProvider(authenticationProvider())

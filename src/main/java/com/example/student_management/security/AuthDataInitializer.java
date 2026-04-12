@@ -17,11 +17,12 @@ public class AuthDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        createUserIfMissing("admin", "admin123", UserRole.ADMIN);
-        createUserIfMissing("student", "student123", UserRole.STUDENT);
+        createUserIfMissing("admin", "admin123", UserRole.ADMIN, null);
+        createUserIfMissing("student", "student123", UserRole.STUDENT, 1);
+        createUserIfMissing("student4", "student123", UserRole.STUDENT, 4);
     }
 
-    private void createUserIfMissing(String username, String rawPassword, UserRole role) {
+    private void createUserIfMissing(String username, String rawPassword, UserRole role, Integer studentId) {
         if (appUserRepository.findByUsername(username).isPresent()) {
             return;
         }
@@ -30,6 +31,7 @@ public class AuthDataInitializer implements CommandLineRunner {
                 .username(username)
                 .password(passwordEncoder.encode(rawPassword))
                 .role(role)
+                .studentId(studentId)
                 .build());
     }
 }

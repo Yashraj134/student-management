@@ -1,7 +1,5 @@
 package com.example.student_management.designpatterns.facade;
 
-import com.example.student_management.aop.AuditAction;
-import com.example.student_management.aop.CheckDuplicateStudent;
 import com.example.student_management.dto.DocumentResponse;
 import com.example.student_management.dto.PagedResponse;
 import com.example.student_management.dto.StudentDashboardStatsResponse;
@@ -12,12 +10,11 @@ import com.example.student_management.dto.YearWiseStudentStatsResponse;
 import com.example.student_management.service.AuditService;
 import com.example.student_management.service.DocumentService;
 import com.example.student_management.service.StudentService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,8 +25,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     private final AuditService auditService;
 
     @Override
-    @CheckDuplicateStudent
-    @AuditAction("CREATE_STUDENT")
     public StudentProfileResponse createStudent(StudentUpsertRequest request) {
         StudentProfileResponse response = studentService.createStudent(request);
         auditService.logAction("CREATE_STUDENT", response.getStudentId());
@@ -37,7 +32,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     }
 
     @Override
-    @AuditAction("BULK_CREATE_STUDENT")
     public List<StudentProfileResponse> bulkCreateStudents(List<StudentUpsertRequest> requests) {
         List<StudentProfileResponse> responses = studentService.bulkCreateStudents(requests);
         responses.forEach(response -> auditService.logAction("CREATE_STUDENT", response.getStudentId()));
@@ -45,22 +39,18 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     }
 
     @Override
-    @AuditAction("UPLOAD_STUDENT_DOCUMENT")
     public DocumentResponse uploadStudentDocument(Integer studentId, String documentType, MultipartFile file) {
         DocumentResponse response = documentService.uploadDocument(studentId, documentType, file);
         auditService.logAction("UPLOAD_STUDENT_DOCUMENT", studentId);
         return response;
     }
 
-    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
     @Override
-    @AuditAction("UPLOAD_PROFILE_IMAGE")
     public StudentProfileResponse uploadStudentProfileImage(Integer studentId, MultipartFile file) {
         StudentProfileResponse response = studentService.uploadStudentProfileImage(studentId, file);
         auditService.logAction("UPLOAD_PROFILE_IMAGE", studentId);
         return response;
     }
-    // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
 
     @Override
     public StudentProfileResponse getStudentById(Integer studentId) {
@@ -77,7 +67,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
         return studentService.getAllStudents(pageable);
     }
 
-    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS START =====
     @Override
     public List<StudentProfileResponse> getAllStudentsList() {
         return studentService.getAllStudentsList();
@@ -87,7 +76,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     public List<StudentSummaryResponse> getAllSummary() {
         return studentService.getAllSummary();
     }
-    // ===== ADDED: GET_ALL_STUDENTS_AND_SUMMARY_APIS END =====
 
     @Override
     public PagedResponse<StudentSummaryResponse> searchStudents(String keyword, Pageable pageable) {
@@ -110,8 +98,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     }
 
     @Override
-    @CheckDuplicateStudent
-    @AuditAction("UPDATE_STUDENT")
     public StudentProfileResponse updateStudent(Integer studentId, StudentUpsertRequest request) {
         StudentProfileResponse response = studentService.updateStudent(studentId, request);
         auditService.logAction("UPDATE_STUDENT", response.getStudentId());
@@ -119,7 +105,6 @@ public class StudentManagementFacadeImpl implements StudentManagementFacade {
     }
 
     @Override
-    @AuditAction("DELETE_STUDENT")
     public void deleteStudent(Integer studentId) {
         documentService.deleteByStudentId(studentId);
         studentService.deleteStudent(studentId);

@@ -36,6 +36,7 @@ public class AuthService {
                 .tokenType("Bearer")
                 .username(appUser.getUsername())
                 .role(appUser.getRole().name())
+                .studentId(appUser.getStudentId())
                 .build();
     }
 }

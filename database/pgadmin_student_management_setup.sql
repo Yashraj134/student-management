@@ -83,7 +83,8 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'STUDENT'))
+    role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'STUDENT')),
+    student_id INT REFERENCES students(student_id) ON DELETE SET NULL
 );
 
 -- Seed students
@@ -166,6 +167,9 @@ COMMIT;
 ALTER TABLE students
     ADD COLUMN IF NOT EXISTS profile_image_path TEXT;
 
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS student_id INT REFERENCES students(student_id) ON DELETE SET NULL;
+
 UPDATE students s
 SET profile_image_path = CASE
                              WHEN lower(coalesce(pi.gender, '')) = 'male' THEN 'defaults/male_icon.jpg'
@@ -174,6 +178,18 @@ SET profile_image_path = CASE
     FROM personal_info pi
 WHERE pi.student_id = s.student_id
   AND (s.profile_image_path IS NULL OR trim(s.profile_image_path) = '');
+
+UPDATE users
+SET student_id = 1
+WHERE username = 'student'
+  AND role = 'STUDENT'
+  AND (student_id IS NULL OR student_id <> 1);
+
+UPDATE users
+SET student_id = 4
+WHERE username = 'student4'
+  AND role = 'STUDENT'
+  AND (student_id IS NULL OR student_id <> 4);
 
 -- ===== DAY2_CURRENT_ACADEMIC_YEAR_DERIVATION START =====
 UPDATE admission_details

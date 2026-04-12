@@ -6,7 +6,9 @@ import com.example.student_management.dto.StudentProfileResponse;
 import com.example.student_management.dto.StudentSummaryResponse;
 import com.example.student_management.dto.StudentUpsertRequest;
 import com.example.student_management.dto.YearWiseStudentStatsResponse;
+import com.example.student_management.entity.Student;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +44,16 @@ public interface StudentService {
     StudentDashboardStatsResponse getDashboardStats();
 
     List<YearWiseStudentStatsResponse> getYearWiseStats();
+
+    Student requestIdCard(Integer id);
+
+    List<Student> getPendingRequests();
+
+    Student approveIdCard(Integer id);
+
+    Student rejectIdCard(Integer id, String remark);
+
+    Map<String, String> getIdCardStatus(Integer id);
 
     StudentProfileResponse updateStudent(Integer studentId, StudentUpsertRequest request);
 

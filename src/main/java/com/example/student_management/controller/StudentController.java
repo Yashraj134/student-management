@@ -8,6 +8,8 @@ import com.example.student_management.dto.StudentProfileResponse;
 import com.example.student_management.dto.StudentSummaryResponse;
 import com.example.student_management.dto.StudentUpsertRequest;
 import com.example.student_management.dto.YearWiseStudentStatsResponse;
+import com.example.student_management.entity.Student;
+import com.example.student_management.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +17,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/students")
@@ -26,6 +30,7 @@ import java.util.List;
 public class StudentController {
 
     private final StudentManagementFacade studentManagementFacade;
+    private final StudentService studentService;
 
     @PostMapping
     public ResponseEntity<StudentProfileResponse> createStudent(@Valid @RequestBody StudentUpsertRequest request) {
@@ -39,6 +44,7 @@ public class StudentController {
     }
 
     @PostMapping(value = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
     public ResponseEntity<DocumentResponse> uploadStudentDocument(
             @PathVariable("id") Integer studentId,
             @RequestParam("documentType") String documentType,
@@ -49,6 +55,7 @@ public class StudentController {
 
     // ===== ADDED: PROFILE_IMAGE_UPLOAD_API START =====
     @PostMapping(value = "/{id}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
     public ResponseEntity<StudentProfileResponse> uploadStudentProfileImage(
             @PathVariable("id") Integer studentId,
             @RequestParam("file") MultipartFile file) {
@@ -57,11 +64,13 @@ public class StudentController {
     // ===== ADDED: PROFILE_IMAGE_UPLOAD_API END =====
 
     @GetMapping("/{id}")
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
     public ResponseEntity<StudentProfileResponse> getStudent(@PathVariable("id") Integer studentId) {
         return ResponseEntity.ok(studentManagementFacade.getStudentById(studentId));
     }
 
     @GetMapping("/summary/{id}")
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
     public ResponseEntity<StudentSummaryResponse> getStudentSummary(@PathVariable("id") Integer studentId) {
         return ResponseEntity.ok(studentManagementFacade.getStudentSummaryById(studentId));
     }
@@ -120,5 +129,42 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable("id") Integer studentId) {
         studentManagementFacade.deleteStudent(studentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping({"/{id}/request-id-card", "/{id}/id-card/request"})
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
+    public ResponseEntity<Student> requestIdCard(@PathVariable("id") Integer studentId) {
+        return ResponseEntity.ok(studentService.requestIdCard(studentId));
+    }
+
+    @GetMapping({"/id-card-requests", "/id-card/pending"})
+    public ResponseEntity<List<Student>> getPendingIdCardRequests() {
+        return ResponseEntity.ok(studentService.getPendingRequests());
+    }
+
+    @PutMapping({"/{id}/approve-id-card", "/{id}/id-card/approve"})
+    public ResponseEntity<Student> approveIdCard(@PathVariable("id") Integer studentId) {
+        return ResponseEntity.ok(studentService.approveIdCard(studentId));
+    }
+
+    @PutMapping({"/{id}/reject-id-card", "/{id}/id-card/reject"})
+    public ResponseEntity<Student> rejectIdCard(
+            @PathVariable("id") Integer studentId,
+            @RequestParam(value = "remark", required = false) String remark,
+            @RequestBody(required = false) Map<String, String> payload) {
+        String resolvedRemark = remark;
+        if ((resolvedRemark == null || resolvedRemark.isBlank()) && payload != null) {
+            resolvedRemark = payload.get("remark");
+        }
+        if (resolvedRemark == null || resolvedRemark.isBlank()) {
+            throw new IllegalArgumentException("remark is required");
+        }
+        return ResponseEntity.ok(studentService.rejectIdCard(studentId, resolvedRemark.trim()));
+    }
+
+    @GetMapping({"/{id}/id-card-status", "/{id}/id-card/status"})
+    @PreAuthorize("@studentAccessEvaluator.canAccessStudent(authentication, #p0)")
+    public ResponseEntity<Map<String, String>> getIdCardStatus(@PathVariable("id") Integer studentId) {
+        return ResponseEntity.ok(studentService.getIdCardStatus(studentId));
     }
 }

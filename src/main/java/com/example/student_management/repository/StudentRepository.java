@@ -14,6 +14,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface StudentRepository extends JpaRepository<Student, Integer> {
 
+    List<Student> findByIdCardStatus(String status);
+
     @Query("""
             select distinct s from Student s
             left join fetch s.studentContact

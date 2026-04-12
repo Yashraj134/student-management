@@ -16,5 +16,6 @@ public class AuthResponse {
     private String tokenType;
     private String username;
     private String role;
+    private Integer studentId;
 }
 

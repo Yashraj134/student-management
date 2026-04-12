@@ -49,6 +49,12 @@ public class Student {
     private String profileImagePath;
     // ===== ADDED: PROFILE_IMAGE_PATH END =====
 
+    @Column(name = "id_card_status", length = 20)
+    private String idCardStatus;
+
+    @Column(name = "id_card_remark", columnDefinition = "TEXT")
+    private String idCardRemark;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

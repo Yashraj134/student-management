@@ -37,5 +37,8 @@ public class AppUser {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role;
+
+    @Column(name = "student_id")
+    private Integer studentId;
 }
 
